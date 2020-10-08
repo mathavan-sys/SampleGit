@@ -1,0 +1,532 @@
+library 'reference-pipeline'
+library 'AppServiceAccount'
+library 'gefs-reference-pipeline'
+
+pipeline {
+	agent any
+
+	parameters {
+		//choice(name: 'CF_ENV', choices: '\ndevelopment\nrelease\nstaging\nproduction', description: 'Target Environment')
+	    choice(name: 'CF_ENV', choices: 'development\nrelease\nstaging_wtc\nproduction_wtc\nperf\nfail\nstaging_edc\nproduction_edc\nstaging_wtc2\nproduction_wtc2\nstaging_edc2\nproduction_edc2', description: 'Target Environment')
+        string(name: 'RELEASE_VERSION', defaultValue: '', description: 'To deploy a specific version, enter the release version here', trim: true)
+	}
+
+	environment {
+		CF_APP_NAME = "geopolitical-efs-query"
+        CF_PAM_ID = "79607"
+        EAI_NUMBER = "3534861"
+        /* EAI Folder is needed for Nexus IQ. You can go to keyword 'cicd', login and enter your EAI and then select nexusIQ to onboard. You will get an email with EAI Folder name. */
+		EAI_FOLDER_NAME = "Geopolitical-EFS"
+		/* Employee numbers who can approve the deployment into production */
+		APP_CM_EMP_IDS="839368,806351"
+		/* credentials is a method that will take credentials id as the argument which will return user id and password in JSON format. You will need to add the credentials in the Jenkins credentials. */
+		/* We will use the database credentials while deploying to PCF (in deploy method). We will use the credentials as _USR and _PSW for user id and password respectively*/
+		GIT_CREDS=credentials('GEFS-GEOPOLITICAL-GIT-CREDS')
+		DEV_DB_CREDS=credentials('3534861-DB-RO-L1-CREDENTIALS')
+		REL_DB_CREDS=credentials('3534861-DB-RO-L3-CREDENTIALS')
+		L4_WTC_DB_CREDS=credentials('3534861-DB-RO-L4-CREDENTIALS')
+		L4_EDC_DB_CREDS=credentials('3534861-DB-RO-L4-CREDENTIALS')
+        PROD_DB_EDC_UPD_CREDS=credentials('3534861-EDC-DB-RO-PROD-CREDENTIALS') /* Production DB EDC Credentails */
+		PROD_DB_WTC_UPD_CREDS=credentials('3534861-WTC-DB-RO-PROD-CREDENTIALS') /* Production DB WTC Credentails */
+      
+        PEM_STRING=credentials('3534861-PEM_STRING')
+		PEM_PROD_STRING=credentials('3534861-PROD-PEM-STRING')
+		
+		SECURITY_CREDS=credentials('3534861-SECURITY-CLIENT-CREDENTIALS')
+		SECURITY_PROD_CREDS=credentials('3534861-PROD-PEM-PASSWORD')
+
+		
+
+		/* Get the channel URL from Microsoft Teams that you have created for your team*/
+		TEAMS_WEBHOOK = "https://outlook.office.com/webhook/e7b5b622-b3ee-4e0b-b44c-739aeab69e86@b945c813-dce6-41f8-8457-5a12c2fe15bf/IncomingWebhook/e5733e54b1214a3498ee5d81acf59393/5e749a1a-f03c-4ff0-9f0d-9bf070a53d61"
+        SONAR_EXCLUSIONS = "'src/main/java/com/fedex/geopolitical/dtoresponse/**','src/main/java/com/fedex/geopolitical/exceptionhandling/**','src/main/java/com/fedex/geopolitical/constants/**','src/main/java/com/fedex/geopolitical/controller/*Api.java','src/main/java/com/fedex/geopolitical/controller/ApiUtil.java','src/main/java/com/fedex/geopolitical/configuration/**','src/main/java/com/fedex/geopolitical/GeoPoliticalApplication.java','src/main/java/com/fedex/geopolitical/util/**','src/main/java/com/fedex/geopolitical/api/v2/controller/*Api.java','src/main/java/com/fedex/geopolitical/api/v2/controller/ApiUtil.java',"
+
+
+        /* Leave the following default values */
+        DB_URL=""
+		APP_VERSION = ""
+		GIT_BRANCH = "${env.BRANCH_NAME}"
+		GIT_TAG = "${env.TAG_NAME}"
+		APP_GROUP = ""
+		JAR_PATH = ""
+		UPS_PROPERTIES = ""
+		PEM_UPS_PROPERTIES = ""
+		NEXUS_REPO = ""
+		NEXUS_VERSION = ""
+		RELEASE_FLAG = false
+		APPD_USER = "fedex1-test"
+		REPLICAS = 1
+		CONFIG_URI=""
+		Syslog_UPS_PROPERTIES=""
+        sysLogURLActive = ""
+        sysLogURLPassive= ""
+		ACTIVE_PROFILE=""
+		DB_USER=""
+		DB_PASS=""
+		PEM_STRING_VALUE=""
+		SECURITY_CRED_VALUE=""
+		
+	}
+
+	options {
+		buildDiscarder(logRotator(numToKeepStr: '10'))
+	}
+
+	tools {
+		jdk 'JAVA_8'
+	}
+
+	stages {
+		stage('Initialize'){
+	        steps{
+	            script{
+	                
+	                if(RELEASE_VERSION!="")
+	                {
+	                    APP_VERSION = RELEASE_VERSION
+	                }
+	                else
+	                {
+	                    APP_VERSION = getApplicationProperty property: 'version'
+	                    println "Tag is ${GIT_TAG}"
+	                    tagCheck.checkTagForMaster GIT_BRANCH, GIT_TAG
+    				    
+                    }
+    				
+    				APP_GROUP = getApplicationProperty property: 'group'
+    				println "App version is ${APP_VERSION}"
+    				println "Group is ${APP_GROUP}"
+    
+    				if(GIT_BRANCH.contains('release-')) { 
+    					NEXUS_REPO = "release"
+    					NEXUS_VERSION="${APP_VERSION}"
+    					RELEASE_FLAG = true
+    				}else{
+    					NEXUS_REPO = "snapshot"
+    					NEXUS_VERSION="${APP_VERSION}-SNAPSHOT"
+    				}
+    				
+    				println "Nexus Repo is ${NEXUS_REPO}"
+	            }
+	        }
+	    }
+		stage('Build') {
+			when {
+				/*      There are different branching patterns. Here I'm maintaining develop and master branches only.
+						Develop will commit to development space and master will deploy to release space using webhook.
+						We are deploying to staging (L6) and production using build parameters (manual).
+						We do not build for stage and production, instead we pull the artifact which was uploaded to nexus and deploy.
+				 */
+				anyOf {
+					environment name: 'CF_ENV', value: 'development'
+					environment name: 'CF_ENV', value: 'release'
+					environment name: 'CF_ENV', value: 'perf'
+					environment name: 'CF_ENV', value: 'fail'
+				}
+				not {
+					anyOf {
+                     	environment name: 'CF_ENV', value: 'nstaging_wtc'
+						environment name: 'CF_ENV', value: 'production_wtc'
+						environment name: 'CF_ENV', value: 'nstaging_edc'
+						environment name: 'CF_ENV', value: 'production_edc'
+						environment name: 'CF_ENV', value: 'nstaging_wtc2'
+						environment name: 'CF_ENV', value: 'production_wtc2'
+						environment name: 'CF_ENV', value: 'nstaging_edc2'
+						environment name: 'CF_ENV', value: 'production_edc2'
+						expression { RELEASE_VERSION!="" }
+					}
+				}
+			}
+			steps {
+				println "Building source from branch ${GIT_BRANCH}"
+
+				sh 'chmod 775 gradlew'
+				sh './gradlew build'
+			}
+		}
+
+		stage('SonarQube & NexusIQ') {
+			parallel {
+				stage('SonarQube') {
+					when {
+						anyOf {
+							environment name: 'CF_ENV', value: 'development'
+							environment name: 'CF_ENV', value: 'release'
+							environment name: 'CF_ENV', value: 'perf'
+							environment name: 'CF_ENV', value: 'fail'
+							
+						}
+						not {
+							anyOf {
+        						environment name: 'CF_ENV', value: 'nstaging_wtc'
+        						environment name: 'CF_ENV', value: 'production_wtc'
+        						environment name: 'CF_ENV', value: 'nstaging_edc'
+        						environment name: 'CF_ENV', value: 'production_edc'
+        						environment name: 'CF_ENV', value: 'nstaging_wtc2'
+        						environment name: 'CF_ENV', value: 'production_wtc2'
+        						environment name: 'CF_ENV', value: 'nstaging_edc2'
+        						environment name: 'CF_ENV', value: 'production_edc2'
+        						expression { RELEASE_VERSION!="" }
+							}
+						}
+					}
+					steps {
+						println "Running SonarQube"
+					
+                        sonarqube projectName: "${CF_APP_NAME}", 
+                                  projectKey: "${APP_GROUP}", 
+                                  projectVersion: "${APP_VERSION}",
+                                  src: 'src/main', 
+                                  test: 'src/test/java', 
+                                  binaries: "build/classes", 
+                                  repo: 'git',
+                                  exclusions: "${SONAR_EXCLUSIONS}",
+                                  jacocoPath: 'build/jacoco/test.exec'    
+					}
+
+				}
+				stage('NexusIQ') {
+					when {
+						anyOf {
+							environment name: 'CF_ENV', value: 'development'
+							environment name: 'CF_ENV', value: 'release'
+							environment name: 'CF_ENV', value: 'perf'
+							environment name: 'CF_ENV', value: 'fail'
+							
+						}
+						not {
+						
+							anyOf {
+        						environment name: 'CF_ENV', value: 'nstaging_wtc'
+        						environment name: 'CF_ENV', value: 'production_wtc'
+        						environment name: 'CF_ENV', value: 'nstaging_edc'
+        						environment name: 'CF_ENV', value: 'production_edc'
+        						environment name: 'CF_ENV', value: 'nstaging_wtc2'
+        						environment name: 'CF_ENV', value: 'production_wtc2'
+        						environment name: 'CF_ENV', value: 'nstaging_edc2'
+        						environment name: 'CF_ENV', value: 'production_edc2'
+        						expression { RELEASE_VERSION!="" }
+							}
+						}
+					}
+					steps {
+						nexusPolicyEvaluation iqApplication: "${EAI_FOLDER_NAME}-${EAI_NUMBER}", iqStage: 'build'
+					}
+				}
+			}
+		}
+
+		stage('Nexus Staging') {
+			when {
+				anyOf {
+					environment name: 'CF_ENV', value: 'development'
+					environment name: 'CF_ENV', value: 'release'
+					environment name: 'CF_ENV', value: 'perf'
+					environment name: 'CF_ENV', value: 'fail'
+
+				}
+				not {
+					anyOf {
+						environment name: 'CF_ENV', value: 'nstaging_wtc'
+						environment name: 'CF_ENV', value: 'production_wtc'
+						environment name: 'CF_ENV', value: 'nstaging_edc'
+						environment name: 'CF_ENV', value: 'production_edc'
+						environment name: 'CF_ENV', value: 'nstaging_wtc2'
+						environment name: 'CF_ENV', value: 'production_wtc2'
+						environment name: 'CF_ENV', value: 'nstaging_edc2'
+						environment name: 'CF_ENV', value: 'production_edc2'
+						expression { RELEASE_VERSION!="" }
+					}
+				}
+			}
+			steps {
+
+				println "Uploading jar to Nexus ${CF_APP_NAME}"
+				nexusArtifactUploader artifacts: [[artifactId: "${CF_APP_NAME}", classifier: '', file: "build/libs/${CF_APP_NAME}-${APP_VERSION}.jar", type: 'jar']],
+					credentialsId: "3534861-NEXUS-CREDS",
+					groupId: "eai${EAI_NUMBER}.${APP_GROUP}",
+					nexusUrl: 'nexus.prod.cloud.fedex.com:8443/nexus',
+					nexusVersion: 'nexus3',
+					protocol: 'https',
+					repository: "${NEXUS_REPO}",
+					version: "${NEXUS_VERSION}"
+
+			}
+		}
+
+		stage('Nexus Pull') { 
+			steps {
+				println "Downloading from nexus repo..."
+                script{
+                    downloadNexusArtifact groupId: "eai${EAI_NUMBER}.${APP_GROUP}",
+                    artifactId: "${CF_APP_NAME}",
+                    repo:"${NEXUS_REPO}",
+                    release: "${RELEASE_FLAG}".toBoolean(),
+                    extension: "jar",
+                    version: "${NEXUS_VERSION}",
+                    downloadFileName: "${CF_APP_NAME}.jar" 
+					
+                }
+
+			}
+		}
+
+		stage('approval') {
+			agent none
+			when {
+				anyOf {
+					environment name: 'CF_ENV', value: 'production_wtc'
+					environment name: 'CF_ENV', value: 'production_edc'
+					environment name: 'CF_ENV', value: 'production_wtc2'
+					environment name: 'CF_ENV', value: 'production_edc2'
+					environment name: 'CF_ENV', value: 'release'
+					
+				}
+				not {
+					anyOf {
+						expression { params.PRE_APPROVED == true }
+					}
+				}
+			}
+			options {
+				timeout(time: 5, unit: 'MINUTES')
+			}
+			steps {
+				script {
+					input(
+						message: "Do you want to deploy in the $CF_ENV environment?",
+						//list of employee numbers who can approve this request
+						submitter: "$APP_CM_EMP_IDS"
+					)
+					echo ("Confirmation Accepted")
+				}
+			}
+		}
+
+		stage('Deploy to PCF') {
+		    steps {
+            	    deployToPCF("${CF_ENV}")
+			}
+		}
+
+	}
+	post {
+		success {
+			office365ConnectorSend color: '#00FF00', message: "SUCCESSFUL", status: "Build Success", webhookUrl: TEAMS_WEBHOOK
+		}
+		failure {
+			office365ConnectorSend color: '#FF0000', message: "FAILED", status: "Build Failure", webhookUrl: TEAMS_WEBHOOK
+		}
+		cleanup {
+        	println "Deleting Worskpace"
+        	deleteDir()
+        }
+	}
+}
+
+def deployToPCF(String cloudSpace) {
+
+    CF_ENV = cloudSpace
+    JAR_PATH = "${CF_APP_NAME}*.jar"
+
+	if(CF_ENV.equalsIgnoreCase('development')){
+        CF_SPACE="development"
+        CF_LEVEL = "dev"
+		ACTIVE_PROFILE= "dev"
+        CF_API = "https://api.sys.edcdev1.paas.fedex.com"
+        DB_USER="${DEV_DB_CREDS_USR}"
+        DB_PASS="${DEV_DB_CREDS_PSW}"
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_CREDS_PSW}" 
+        CONFIG_URI = "https://geopolitical-efs-config-server-rel.app.edcdev1.paas.fedex.com/"
+        /*SyslogDrain  */
+        sysLogURLActive = "syslog://c0014081.test.cloud.fedex.com:2514"
+        sysLogURLPassive = ""
+    }else if(CF_ENV.equalsIgnoreCase('release')){
+        CF_SPACE="release"
+        CF_LEVEL = "rel"
+		ACTIVE_PROFILE= "rel"
+        CF_API = "https://api.sys.edcdev1.paas.fedex.com"
+        DB_USER="${REL_DB_CREDS_USR}"
+        DB_PASS="${REL_DB_CREDS_PSW}"
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_CREDS_PSW}"        
+        CONFIG_URI = "https://geopolitical-efs-config-server-rel.app.edcdev1.paas.fedex.com/"
+        /*SyslogDrain  */
+        sysLogURLActive = "syslog://c0014081.test.cloud.fedex.com:2514"
+        sysLogURLPassive = ""
+    }
+    else if(CF_ENV.equalsIgnoreCase('perf')){
+        CF_APP_NAME= "${CF_APP_NAME}-${CF_ENV}"
+        CF_SPACE= "release"
+        CF_LEVEL = "rel"
+		ACTIVE_PROFILE= "rel_perf"
+        CF_API = "https://api.sys.edcdev1.paas.fedex.com"  
+        /*DB_USER="${L4_WTC_DB_CREDS_USR}"
+        DB_PASS="${L4_WTC_DB_CREDS_PSW}"*/
+        DB_USER="${L4_EDC_DB_CREDS_USR}"
+        DB_PASS="${L4_EDC_DB_CREDS_PSW}"
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_CREDS_PSW}" 
+        CONFIG_URI = "https://geopolitical-efs-config-server-rel.app.edcdev1.paas.fedex.com/"
+       /*SyslogDrain  */
+        sysLogURLActive = "syslog://c0014081.test.cloud.fedex.com:2514"
+        sysLogURLPassive = ""
+    }else if(CF_ENV.equalsIgnoreCase('fail')){
+        CF_APP_NAME= "${CF_APP_NAME}-${CF_ENV}"
+        CF_SPACE= "release"
+        CF_LEVEL = "rel"
+		ACTIVE_PROFILE= "rel_fail"
+        CF_API = "https://api.sys.wtcdev1.paas.fedex.com"
+        DB_USER="${L4_WTC_DB_CREDS_USR}"
+        DB_PASS="${L4_WTC_DB_CREDS_PSW}"
+        /*DB_USER="${L4_EDC_DB_CREDS_USR}"
+        DB_PASS="${L4_EDC_DB_CREDS_PSW}"*/
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_CREDS_PSW}" 
+        CONFIG_URI = "https://geopolitical-efs-config-server-fail-rel.app.wtcdev1.paas.fedex.com/"
+       /*SyslogDrain  */
+        sysLogURLActive = "syslog://c0014081.test.cloud.fedex.com:2514"
+        sysLogURLPassive = ""
+    }else if(CF_ENV.equalsIgnoreCase('staging_wtc')){
+        CF_SPACE="staging"
+		CF_LEVEL = "stage"
+		ACTIVE_PROFILE= "stage_wtc"
+		CF_APPD_LEVEL = "stage-wtc"
+        CF_API = "https://api.sys.wtccf1.paas.fedex.com"    
+        CONFIG_URI = "https://geopolitical-efs-config-server-stage.app.wtccf1.paas.fedex.com/"
+        DB_USER="${PROD_DB_WTC_UPD_CREDS_USR}"
+        DB_PASS="${PROD_DB_WTC_UPD_CREDS_PSW}"
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_PROD_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_PROD_CREDS_PSW}"        
+        APPD_USER = "fedex1"
+        REPLICAS = 1
+        sysLogURLActive = "syslog://c0017785.prod.cloud.fedex.com:2514"
+        sysLogURLPassive = "syslog://c0014411.prod.cloud.fedex.com:2514"
+    }else if(CF_ENV.equalsIgnoreCase('staging_edc')){
+		CF_SPACE="staging"
+        CF_LEVEL = "stage"
+		ACTIVE_PROFILE= "stage_edc"
+		CF_APPD_LEVEL = "stage-edc"
+        CF_API = "https://api.sys.edccf1.paas.fedex.com"
+        CONFIG_URI = "https://geopolitical-efs-config-server-stage.app.edccf1.paas.fedex.com/"
+        DB_USER="${PROD_DB_EDC_UPD_CREDS_USR}"
+        DB_PASS="${PROD_DB_EDC_UPD_CREDS_PSW}"
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_PROD_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_PROD_CREDS_PSW}"  
+        APPD_USER = "fedex1"
+        REPLICAS = 1
+        sysLogURLActive = "syslog://c0019080.prod.cloud.fedex.com:2514"
+        sysLogURLPassive = "syslog://c0019081.prod.cloud.fedex.com:2514"
+    }else if(CF_ENV.equalsIgnoreCase('production_wtc')){
+		CF_SPACE="production"
+        CF_LEVEL = "prod"
+		ACTIVE_PROFILE= "prod_wtc"
+		CF_APPD_LEVEL = "prod-wtc"
+        CF_API = "https://api.sys.wtccf1.paas.fedex.com"
+        CONFIG_URI = "https://geopolitical-efs-config-server-prod.app.wtccf1.paas.fedex.com/"
+        DB_USER="${PROD_DB_WTC_UPD_CREDS_USR}"
+        DB_PASS="${PROD_DB_WTC_UPD_CREDS_PSW}"
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_PROD_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_PROD_CREDS_PSW}"   
+	    APPD_USER = "fedex1"
+        REPLICAS = 3
+        sysLogURLActive = "syslog://c0017785.prod.cloud.fedex.com:2514"
+        sysLogURLPassive = "syslog://c0014411.prod.cloud.fedex.com:2514"
+    }else if(CF_ENV.equalsIgnoreCase('production_edc')){
+		CF_SPACE="production"
+        CF_LEVEL = "prod"
+		ACTIVE_PROFILE= "prod_edc"
+		CF_APPD_LEVEL = "prod-edc"
+        CF_API = "https://api.sys.edccf1.paas.fedex.com"
+        CONFIG_URI = "https://geopolitical-efs-config-server-prod.app.edccf1.paas.fedex.com/"
+        DB_USER="${PROD_DB_EDC_UPD_CREDS_USR}"
+        DB_PASS="${PROD_DB_EDC_UPD_CREDS_PSW}"
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_PROD_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_PROD_CREDS_PSW}"   
+        APPD_USER = "fedex1"
+        REPLICAS = 3
+        sysLogURLActive = "syslog://c0019080.prod.cloud.fedex.com:2514"
+        sysLogURLPassive = "syslog://c0019081.prod.cloud.fedex.com:2514"
+    }    
+    else if(CF_ENV.equalsIgnoreCase('staging_wtc2')){
+        CF_SPACE="staging"
+		CF_LEVEL = "stage"
+		ACTIVE_PROFILE= "stage_wtc2"
+		CF_APPD_LEVEL = "stage-wtc"
+        CF_API = "https://api.sys.wtccf2.paas.fedex.com"    
+        CONFIG_URI = "https://geopolitical-efs-config-server-stage.app.wtccf2.paas.fedex.com/"
+        DB_USER="${PROD_DB_WTC_UPD_CREDS_USR}"
+        DB_PASS="${PROD_DB_WTC_UPD_CREDS_PSW}"
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_PROD_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_PROD_CREDS_PSW}"        
+        APPD_USER = "fedex1"
+        REPLICAS = 1
+        sysLogURLActive = "syslog://c0017785.prod.cloud.fedex.com:2514"
+        sysLogURLPassive = "syslog://c0014411.prod.cloud.fedex.com:2514"
+    }else if(CF_ENV.equalsIgnoreCase('staging_edc2')){
+		CF_SPACE="staging"
+        CF_LEVEL = "stage"
+		ACTIVE_PROFILE= "stage_edc2"
+		CF_APPD_LEVEL = "stage-edc"
+        CF_API = "https://api.sys.edccf2.paas.fedex.com"
+        CONFIG_URI = "https://geopolitical-efs-config-server-stage.app.edccf2.paas.fedex.com/"
+        DB_USER="${PROD_DB_EDC_UPD_CREDS_USR}"
+        DB_PASS="${PROD_DB_EDC_UPD_CREDS_PSW}"
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_PROD_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_PROD_CREDS_PSW}"  
+        APPD_USER = "fedex1"
+        REPLICAS = 1
+        sysLogURLActive = "syslog://c0019080.prod.cloud.fedex.com:2514"
+        sysLogURLPassive = "syslog://c0019081.prod.cloud.fedex.com:2514"
+    }else if(CF_ENV.equalsIgnoreCase('production_wtc2')){
+		CF_SPACE="production"
+        CF_LEVEL = "prod"
+		ACTIVE_PROFILE= "prod_wtc2"
+		CF_APPD_LEVEL = "prod-wtc"
+        CF_API = "https://api.sys.wtccf2.paas.fedex.com"
+        CONFIG_URI = "https://geopolitical-efs-config-server-prod.app.wtccf2.paas.fedex.com/"
+        DB_USER="${PROD_DB_WTC_UPD_CREDS_USR}"
+        DB_PASS="${PROD_DB_WTC_UPD_CREDS_PSW}"
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_PROD_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_PROD_CREDS_PSW}"   
+	    APPD_USER = "fedex1"
+        REPLICAS = 3
+        sysLogURLActive = "syslog://c0017785.prod.cloud.fedex.com:2514"
+        sysLogURLPassive = "syslog://c0014411.prod.cloud.fedex.com:2514"
+    }else if(CF_ENV.equalsIgnoreCase('production_edc2')){
+		CF_SPACE="production"
+        CF_LEVEL = "prod"
+		ACTIVE_PROFILE= "prod_edc2"
+		CF_APPD_LEVEL = "prod-edc"
+        CF_API = "https://api.sys.edccf2.paas.fedex.com"
+        CONFIG_URI = "https://geopolitical-efs-config-server-prod.app.edccf2.paas.fedex.com/"
+        DB_USER="${PROD_DB_EDC_UPD_CREDS_USR}"
+        DB_PASS="${PROD_DB_EDC_UPD_CREDS_PSW}"
+        PEM_UPS_PROPERTIES = ["appNamePemStringValue" : "${PEM_PROD_STRING_PSW}"]
+        SECURITY_CRED_VALUE="${SECURITY_PROD_CREDS_PSW}"   
+        APPD_USER = "fedex1"
+        REPLICAS = 3
+        sysLogURLActive = "syslog://c0019080.prod.cloud.fedex.com:2514"
+        sysLogURLPassive = "syslog://c0019081.prod.cloud.fedex.com:2514"
+    }
+
+	println 'Deploying to PCF'
+	
+			pcfDeploy pamId: "${CF_PAM_ID}",
+			url: "${CF_API}",
+			stage: "${CF_SPACE}",
+			cfcmd: "push ${CF_APP_NAME} --no-start -i ${REPLICAS} --hostname ${CF_APP_NAME}-${CF_LEVEL} -p ${JAR_PATH}"
+			pcfAction.createUPS appName: "${CF_APP_NAME}", upsName:'PEM_UPS', props:PEM_UPS_PROPERTIES
+		    pcfAction.setEnvironment appName: "${CF_APP_NAME}", envName:'DB_USER', envValue:"${DB_USER}"
+		    pcfAction.setEnvironment appName: "${CF_APP_NAME}", envName:'DB_PASS', envValue:"${DB_PASS}"
+			pcfAction.setEnvironment appName: "${CF_APP_NAME}", envName:'CONFIG_URI', envValue:"${CONFIG_URI}"
+	        pcfAction.setEnvironment appName: "${CF_APP_NAME}", envName:'SECURITY_PASSWORD', envValue:"${SECURITY_CRED_VALUE}"
+			pcfAction.setEnvironment appName: "${CF_APP_NAME}", envName:'ACTIVE_PROFILE', envValue:"${ACTIVE_PROFILE}"
+            syslog.sysLogUPS appName: "${CF_APP_NAME}", upsName:'SyslogDrainActive', props:sysLogURLActive
+            syslog.sysLogUPS appName: "${CF_APP_NAME}", upsName:'SyslogDrainPassive', props:sysLogURLPassive			
+			pcfAction.createAppdService appdUser: "${APPD_USER}", eaiNum:"${EAI_NUMBER}", appName:"${CF_APP_NAME}",eaiAppName:"${EAI_FOLDER_NAME}",level:"${CF_LEVEL}"
+			pcfAction.restartApp appName: "${CF_APP_NAME}"    
+		
+ 
+ } 

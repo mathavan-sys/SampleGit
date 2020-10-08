@@ -1,0 +1,85 @@
+spring:
+  profiles:
+    active: test
+    
+---   
+spring:
+  profiles: test
+  main:
+    allow-bean-definition-overriding: true  
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jackson:
+    date-format: yyyy-MM-dd
+    time-zone: GMT
+    serialization:
+      write-dates-as-timestamps: false   
+
+  cache:
+      cache-name: AuthN
+      caffeine.specs: maximumSize=2500,expireAfterAccess=4h  
+      
+geopolitical: 
+  application:
+    timezone: GMT
+    version: 1.0.0
+  type:
+    address: FCLTY,RALYD
+  egis:
+    address:
+      type: PHYS
+  party:
+    partylocroletypecd: OPCO
+  security:
+    action: ACCESS
+    command:
+      role: 3534861_GeopoliticalCommandService
+    admin:
+      role: 3534861_GeopoliticalAdminService
+    query:
+      role: 3534861_GeopoliticalQueryService
+
+ 
+service:
+     name: APP3534861
+     
+
+com:
+ fedex:
+   framework:
+          core:
+            app:
+              id: APP3534861
+          security: 
+              client:
+                credentials:
+                      provider:
+                          type: CDS
+                          url: https://cds-level2.ute.fedex.com/CommonDataService/secure/cds2.wsdl
+                      password: yCjxFrWUm30soDgFjiHjgIhwa
+                      pem: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQ0KUHJvYy1UeXBlOiA0LEVOQ1JZUFRFRA0KREVLLUluZm86IERFUy1FREUzLUNCQywzNDZCNzE5OTQ0RTI4NkFDDQoNCkpIenU5OVhkUndDNFdwemFjOEFKWTZ4RWxVQUhDUUZCWUdtbHFWWUVpaGV6ajl5SEZZWkJGWU93UzRlM0NXKzcNCmZ1aXVNZ3dNWXUzRjNzTmVxSmJsaGhwVERQNHRYbzB4SWQ0SnZBMWd4Tm9HZ084Y2tlcFZiK0JvU0RUMDYxT1INCkNUc29XV0pHZUJHVC9KVGJUcmQ3Wk04ZUgxMldjSDFmMURpY1E4Z3hSK3NOV0RqRzExeGhvczU3aEQwSWZNNjENCm5WcktlK1ZTU1N0V1Q3QzM4Y2xBK2xKa2RlbmRVVXJPUnVaMmRxTVJwTVdYbkYyVjVsdFJRaldFekVKU1pSZlANCkovRnYrOW5NS0dQTXhWSkZPbFNVVWRXcndkak91TWhaaktVMStwTm1JUlVuTHBvbnNRMkx3bmlPV0lvcTY1cDUNCldrb2ZFWFl4MUdtOXZxbnpKcUR5SW5Gbko3L0hyNW1UQ2FXYmtFN0JPUG5mM3o2ejU3cDVHa1YvZ0I0bEhrVCsNCjBzQnRhOXFmd0JSN2l5NXhTbEx4MEloVjFEWWJLYjBMMCtHblRkY2FGbk9UZitjeHhtM1JyaTVGNnNORjZ4R2MNCkdJNlFIdzJkY0M5YlNmNk1rSkRxS1JiMTlEY004TERJbW83b0YrRWEwQW16d0ZYaTF5NWNlcGhWTEYzTkZpYWcNCkdmakQrdXVKWm1iSnh3dzZlMERqZCtHa2UvVmd4b1A1dTdPSWh6clZwSkVGNUZpWGlJQUpoUHUrYWE1cENneFoNCkVwYTNQK3hRQjJMOVlzWFdpNVJQQVVKZUNlU1VFWlF4RmVkeWJPUHBtUHluc1ptajlNRlIzMFdIcUt3d1IrTWENCllhZkdPbzFIdlR5ZTV4aWFGeWFKSDU2ZjBHMjQzU0pZVSs4OWtpTXJ6N0MwaXJabk9xZTVIeW53QTFnWGpxckkNClF2NnhIbXpWZ2RkbWpyalkxRE9JNjR4OUlZcG5aUElWdTl1a2pFRjZSbW1DQjdxZlRFY0t5dHUyODhlKzJxbDQNCkZJWEJKbHlnc3ZMVXJ6c1J3amg5VDlKM3NwMnl0VDRIZnBOOURTUUhZRjA9DQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQ0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlER3pDQ0FnT2dBd0lCQWdJQ0xVOHdEUVlKS29aSWh2Y05BUUVGQlFBd2NqRUxNQWtHQTFVRUJoTUNWVk14DQpFakFRQmdOVkJBZ1RDVlJsYm01bGMzTmxaVEVWTUJNR0ExVUVCeE1NUTI5c2JHbGxjblpwYkd4bE1RNHdEQVlEDQpWUVFLRXdWR1pXUkZlREVRTUE0R0ExVUVDeE1IYVc1bWIzTmxZekVXTUJRR0ExVUVBeE1OU1c1bWIzTmxZMVJsDQpjM1JEUVRBYUZ3c3lNREEwTVRNeE56TTVXaGNMTWpFd05URTBNVGt4T0Zvd2dhUXhLVEFuQmdrcWhraUc5dzBCDQpDUUVXR21admNuSmxjM1F1ZDJsc2JHbGhiWE5BWm1Wa1pYZ3VZMjl0TVFzd0NRWURWUVFHRXdKVlV6RUxNQWtHDQpBMVVFQ0F3Q1ZFNHhGVEFUQmdOVkJBY01ERU52Ykd4cFpYSjJhV3hzWlRFT01Bd0dBMVVFQ2d3RlJtVmtaWGd4DQpJVEFmQmdOVkJBc01HRkJ5YjJSMVkzUWdZVzVrSUVkbGIzQnZiR2wwYVdOaGJERVRNQkVHQTFVRUF3d0tRVkJRDQpNelV6TkRnMk1UQ0JuekFOQmdrcWhraUc5dzBCQVFFRkFBT0JqUUF3Z1lrQ2dZRUFsRmpnZ3h1emU4dXBTaEIzDQpHOEFITTZXT0czdVBrMGZXN3lQOXovdUswS3ppdHovMjB0YmpTTkd4S2lMWkdyWUFHQnU1THZlUVNGVU81TFBnDQppSTcrKzE0UEh5eTUxQTJJaWM1QXRmMDFtNDRZTW4yQzljamhhM0Z2eWtBWFl6TG5oWE1CZzlWVTd2cERDNXVSDQpNaEJkYVE4OEEyZkRlV0ZuZlBaS1l3S0N2NThDQXdFQUFhTVFNQTR3REFZRFZSMFRCQVV3QXdFQkFEQU5CZ2txDQpoa2lHOXcwQkFRVUZBQU9DQVFFQVNRaEVnR294VlJmcURqcG10WWVqMi9ORWJWL1h5TC9VM2pWTDlCWFdrcjYyDQpRTllMT09qWFpQc1hSV2hkQ0t1NzA0cXloU2ttbHYwbnpOVnZCc0ptQVY2ZmRtN3phQWttOXdvRndqR0R5TktSDQplVzBMNloySkVkSlRzTGI2Y1l2TkZBUkdJcHJyY005ZnE2WU5yVzRWMXQvQjc0OFlwMHljTGZKeHErdnppNTdTDQpBVmJMUjcrN0NZSFZaWk5NeTNISXdDcVVPZEJPVkFTRlhjQ0RvRC9TUFBNVkpzOElER3FYQXAzSnVJK2lrOVJBDQo3ek85bDloek9CczJsajBXbGZkd2dpcWxTY0d6cENOR252T0tYUTNHQ2U0VEpoclFERDZCZzRxSXBJd0JmTWJTDQpEbzdoM0svL0xXbUErNFJ4RytySlh2K01qeU44Ykk3NmFkTnIxR0dhUGc9PQ0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tDQpNSUlEYmpDQ0FsYWdBd0lCQWdJQlpEQU5CZ2txaGtpRzl3MEJBUVVGQURCeU1Rc3dDUVlEVlFRR0V3SlZVekVTDQpNQkFHQTFVRUNCTUpWR1Z1Ym1WemMyVmxNUlV3RXdZRFZRUUhFd3hEYjJ4c2FXVnlkbWxzYkdVeERqQU1CZ05WDQpCQW9UQlVabFpFVjRNUkF3RGdZRFZRUUxFd2RwYm1admMyVmpNUll3RkFZRFZRUURFdzFKYm1admMyVmpWR1Z6DQpkRU5CTUJvWEN6QTNNRGN3TmpFd01UZGFGd3N5TnpBM01ERXhNREUzV2pCeU1Rc3dDUVlEVlFRR0V3SlZVekVTDQpNQkFHQTFVRUNCTUpWR1Z1Ym1WemMyVmxNUlV3RXdZRFZRUUhFd3hEYjJ4c2FXVnlkbWxzYkdVeERqQU1CZ05WDQpCQW9UQlVabFpFVjRNUkF3RGdZRFZRUUxFd2RwYm1admMyVmpNUll3RkFZRFZRUURFdzFKYm1admMyVmpWR1Z6DQpkRU5CTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFwdzVRTzdTYmZ6MWtMcTZVDQp1TnlmbTljQ2VuQVRuQ0lIcDhkczQrZkRHaFBqbHBzOWR5WWJpMmI5MlhKN2hjdWFCbjNGQjZ0bzJrd0lHUFJWDQozbXNvYU5aOGhmUWwyT0htd1lpVzFIOTE0eXhjQmtzL2pXam5ET1VBcVdFLzQ5MjA2aXBJVnFycktDSjRENUNUDQpiZXEwWk1BdVprZThoNkJ4Y2IvcWJEYmZQY2xFY21lUzhSakhYV1VTcC9YYzVLNTBnNkNkK2ZCT05NT2ZFeG5IDQpndXdGdzdWUStxR0pXcUNNcFBMMWIwTVdXVDNuZFc2TlRGTUhQRXdtRm1tUldjcDNUbGVXN1d4TjlPcldkeFYxDQphdGQwY01sdFIrOHEyaTAxcWNVZU1MYnNUa1YybmVwSEtBRUhXN3F5NVFoU3M2dC9qaHNVL0N6N1cyTU4rWkkwDQprOStGeVFJREFRQUJveE13RVRBUEJnTlZIUk1FQ0RBR0FRRUJBZ0VDTUEwR0NTcUdTSWIzRFFFQkJRVUFBNElCDQpBUUNWNWpXRnAyZmhFcjc2dkZjQ3FQcXlvNC9FanJRelUwbnRUaEswdldUZDkxUVBXUEw3a0hLclFQcG1kZStNDQpvL2F0TERveHBybE9Icmc3MlRvN0N2eHBQSWltSzdkS1ZVQmdhbmhWZTMyNm5SaXNuVlByWkdGdlVjMGNWNmQ1DQpXQjZBdmVUSWRUanIxUnFrYXdiWXRiR1dLcng3ckJNM1liYlZUZE5zMFJzWDdnTEh2ZHB4TWV6ZTJRNHVtQ1Z0DQoxdlgrcFd1UEpuZXpUdzJPS0gxSStOdFZvNm43V2haOE9BdGVGU2ltcGlyL0xnc3RqbnI0VlNlaXc2cHJxcG82DQo1YjdsVVFSTFMwbFhIb01WU3dJamoxbndsS1JxeWNRUWxpNDBqaFNpQlhuSU9aL1h0YS9DR0lqMkZJQUVTKzVWDQpKWDJpNmpwK1lTRmt4UTVYWmlIcDV5d3INCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0NCg==
+              server:
+                authorization:
+                  cds:
+                    service:
+                      name: 943415_cds
+                    url: https://cds-level2.ute.fedex.com/CommonDataService/secure/cds2.wsdl
+                  grs:
+                    url: http://dev-mygroups.corp.fedex.com:1904/wsso/mygroups
+              service:
+                authentication:
+                           ldap:
+                            url: ldap://dirdev.corp.fedex.com:389/ou=people,o=fedex,c=us
+       

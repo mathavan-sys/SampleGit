@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <property name="eai.nbr" value="3534861" />
+    <property name="eai.name" value="Geopolitical" />
+    <appender name="APPLICATION" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"eai_nbr":"${eai.nbr}","eai_name":"${eai.name}"}</customFields>
+            <fieldNames>
+                <levelValue>[ignore]</levelValue> 
+                <logger>logger</logger> 
+                <thread>thread</thread> 
+                <timestamp>timestamp</timestamp>
+                <version>[ignore]</version>
+            </fieldNames>
+            <shortenedLoggerNameLength>0</shortenedLoggerNameLength>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampPattern>
+            <timeZone>GMT</timeZone>
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>20</maxDepthPerThrowable>
+                <maxLength>1024</maxLength>
+                <shortenedClassNameLength>20</shortenedClassNameLength>
+                <inlineHash>true</inlineHash>
+            </throwableConverter>
+        </encoder>
+    </appender>
+    <root level="info">
+        <appender-ref ref="APPLICATION" />
+    </root>
+</configuration>

@@ -1,0 +1,170 @@
+buildscript {
+	ext {
+		springBootVersion = '2.1.2.RELEASE'
+	}
+	repositories {
+		maven { url "https://nexus.prod.cloud.fedex.com:8443/nexus/repository/Gradle" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath "org.springframework.cloud:spring-cloud-contract-gradle-plugin:2.1.0.RELEASE"
+		classpath "io.spring.gradle:dependency-management-plugin:1.0.6.RELEASE"
+	}
+}
+plugins {
+  id 'org.hidetake.swagger.generator' version '2.18.1'
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'jacoco' 
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.fedex.efs.geopolitical.query'
+version = '1.0.23'
+sourceCompatibility = '1.8'
+
+repositories {
+	maven { url "https://nexus.prod.cloud.fedex.com:8443/nexus/repository/maven-central" }
+	maven { url "https://nexus.prod.cloud.fedex.com:8443/nexus/content/repositories/central"	}
+	maven { url "https://nexus.prod.cloud.fedex.com:8443/nexus/repository/oracle" }
+	maven { url "https://nexus.prod.cloud.fedex.com:8443/nexus/content/repositories/redux-snapshot" }
+	maven { url "https://nexus.prod.cloud.fedex.com:8443/nexus/content/repositories/redux" }
+  }
+
+ext {
+	set('springCloudVersion', 'Greenwich.RELEASE')
+}
+test {
+    ignoreFailures = false
+}
+springBoot {
+    buildInfo()
+}
+dependencies {
+	compile group: 'io.swagger', name: 'swagger-models', version: '1.5.22'
+	//swaggerCodegen 'io.swagger:swagger-codegen-cli:2.4.2'             // Swagger Codegen V2
+    //swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.5'  // or Swagger Codegen V3
+    swaggerCodegen 'org.openapitools:openapi-generator-cli:3.3.4'     // or OpenAPI Generator
+	compile(group: 'org.springframework.boot', name: 'spring-boot-starter', version:'2.1.2.RELEASE') 
+	{
+		exclude(module: 'spring-boot-starter-logging')
+	}
+	compile(group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version:'2.1.2.RELEASE')
+	compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version:'2.1.2.RELEASE'
+	compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'2.1.2.RELEASE'
+	compile group: 'javax.ws.rs', name: 'jsr311-api', version:'1.1.1'
+	//runtimeOnly ('com.oracle.jdbc:ojdbc8:12.2.0.1')
+	compile(group: 'com.oracle.jdbc', name: 'ojdbc8', version: '12.2.0.1') {
+    exclude module: 'xmlparserv2'
+}
+	
+	compileOnly group: 'org.projectlombok', name: 'lombok', version:'1.18.4'
+	annotationProcessor('org.projectlombok:lombok:1.18.4')
+	runtime group: 'org.springframework.boot', name:'spring-boot-devtools', version: '2.1.2.RELEASE'
+	compile(group: 'org.hibernate', name: 'hibernate-entitymanager', version:'5.3.7.Final') 
+	{
+		exclude(module: 'xml-apis')
+    }
+
+	compile group: 'io.springfox', name: 'springfox-swagger2', version:'2.9.2'
+	compile group: 'io.springfox', name: 'springfox-swagger-ui', version:'2.9.2'
+	
+	runtime group: 'com.h2database', name: 'h2', version: '1.4.197'
+	compile group: 'org.modelmapper', name: 'modelmapper', version:'2.3.2'
+	testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.6'
+	testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.1.2.RELEASE'
+	testCompile group: 'org.springframework.restdocs', name: 'spring-restdocs-mockmvc', version: '2.0.3.RELEASE'
+	testCompile group: 'io.rest-assured', name: 'rest-assured', version: '3.0.0'
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.2.0')
+    testCompile('org.junit.jupiter:junit-jupiter-params:5.2.0')
+    testRuntime('org.junit.jupiter:junit-jupiter-engine:5.2.0')
+	
+	implementation('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'){
+		exclude module: 'gson'
+	}
+
+	compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-config', version:'2.1.0.RELEASE'
+	compile group: 'org.springframework.cloud', name: 'spring-cloud-config-client', version:'2.1.0.RELEASE'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-dependencies', version: 'Greenwich.RELEASE'
+
+
+
+	compile group: 'com.fedex.framework', name: 'security-client', version: '3.0.0.RELEASE'
+    compile group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '5.2'
+
+	implementation 'com.github.ben-manes.caffeine:caffeine:2.5.6'
+ 	implementation 'com.fedex.framework:security-server-authorization:1.0.6.RELEASE'
+	implementation 'com.fedex.framework:security-server-authentication:1.0.10.RELEASE'
+	 implementation 'org.springframework:spring-context-support:5.1.4.RELEASE'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	
+	testCompile group: 'io.rest-assured', name: 'json-schema-validator', version: '3.3.0'
+	testCompile group: 'io.rest-assured', name: 'json-path', version: '3.3.0'
+	testCompile group: 'io.rest-assured', name: 'spring-mock-mvc', version: '3.3.0'
+	testCompile group: 'io.rest-assured', name: 'rest-assured', version: '3.0.0'
+
+    
+    testCompile group: 'org.springframework.security', name: 'spring-security-test', version: '4.2.12.RELEASE'
+
+
+	compile group: 'joda-time', name: 'joda-time', version:'2.0'
+
+	jacoco {
+	    toolVersion = "0.8.3"
+	    reportsDir = file("$buildDir/customJacocoReportDir")
+	}
+	
+	jacocoTestReport {
+	    reports {
+		        xml.enabled false
+		        csv.enabled false
+		        html.destination file("${buildDir}/jacocoHtml")
+	    }
+	    afterEvaluate{
+	    	classDirectories = files(classDirectories.files.collect{
+	    		fileTree(dir: it, exclude: ['com/fedex/geopolitical/dto/*',
+	    									'com/fedex/geopolitical/api/v1/dto/*',
+	    									'com/fedex/geopolitical/dtoresponse/*',
+	    									'com/fedex/geopolitical/dtorequest/*',
+	    									'com/fedex/geopolitical/dtometa/*',
+	    									'com/fedex/geopolitical/configuration/*',
+	    									'com/fedex/geopolitical/model/*'])
+	    	})
+	    }
+	}
+	
+}
+
+swaggerSources {
+  geopoliticalefsqueryV2 {
+    inputFile = file('api-v2.yaml')
+    code {
+      language = 'spring'
+      configFile = file('config-v2.json')
+    }
+  }
+}
+
+task copyApiFilesToControllerV2(type: Copy) {
+	dependsOn generateSwaggerCode
+
+  	from ("$buildDir/swagger-code-geopoliticalefsqueryV2/src/main/java/com/fedex/geopolitical/api/v2/controller"){
+    	include "**/*Api.java"
+    	include "**/*ApiUtil.java"
+    }
+    into "src/main/java/com/fedex/geopolitical/api/v2/controller"
+    
+}
+
+//compileJava.dependsOn clean
+
+//compileJava.dependsOn swaggerSources.geopoliticalefsquery.code, swaggerSources.geopoliticalefsqueryV1.code 
+compileJava.dependsOn copyApiFilesToControllerV2
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}

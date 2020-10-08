@@ -1,0 +1,6 @@
+{
+  "library": "spring-boot",
+  "modelPackage": "com.fedex.geopolitical.dtoresponse.swaggerdtos",
+  "apiPackage": "com.fedex.geopolitical.api.v2.controller",
+  "invokerPackage": "com.fedex.geopolitical"
+}

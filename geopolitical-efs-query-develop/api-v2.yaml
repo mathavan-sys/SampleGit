@@ -1,0 +1,1509 @@
+openapi: 3.0.0
+info:
+  description: These APIs expose the query end points for geopolitical services <p><h3> Changes from 2.0.0 </h3></p> <li>  Added support for address labels  </li> <li>  Added support for phone number formats in Country object  </li> <li>  Removed all unused APIs  </li> <li>  Converted geopoliticalId to String  </li> <li> Added locales section in Language APIs</li> <li> Added additional details to Meta section of all responses</li><li> Added transactionId</li>
+  version: 2.0.4
+  title: Geopolitical EFS Query Service
+  contact:
+    email: PLGEFS_GEOPOLITICAL@corp.ds.fedex.com
+servers:
+- description: SwaggerHub API Auto Mocking
+  url: http://cvc.site.fedex.com/apis/GEFS-CORE-Dev/geopolitical-efs-query/2.0.1/
+- url: https://geopolitical-efs-gateway-dev.app.edcdev1.paas.fedex.com/geopolitical-efs-query/v2
+paths:
+  /monthsOfYear:
+    get:
+      tags:
+      - Retrieve Month Of Year
+      summary: Retrieves all month of year information
+      description: Fetches all the month of year information from the system
+      operationId: getMonths
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      responses:
+        200:
+          description: 'Gets all months of year related information successfully '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthsOfYearResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /daysOfWeek:
+    get:
+      tags:
+      - Retrieve Day Of Week
+      summary: Retrieves all days of week information
+      description: Fetches all the days of week information from the system
+      operationId: getRefDaoOfWeeks
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      responses:
+        200:
+          description: 'Gets all days of week related information successfully '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaysOfWeekResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /languages:
+    get:
+      tags:
+      - Retrieve Language
+      summary: Retrieves all language related information
+      description: Fetches all language Information including the locale, translated day of week and translated month of year from the system
+      operationId: getLanguage
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: countryCode
+        description: Country code for a particular country needs to be provided *(Only alphabets of limit 1 to 2 characters.)*
+        required: false
+        schema:
+          type: string
+          pattern: ^[a-zA-Z]{1,2}$
+      - in: query
+        name: localeCode
+        description: Locale code for a particular language needs to be provided *(Only alphabets, underscore, and hyphen of limit 1 to 18 characters.)*
+        required: false
+        schema:
+          type: string
+          pattern: ^[a-zA-Z-_]{1,18}$
+      responses:
+        200:
+          description: 'Gets all language related information successfully '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /languages/{langCd}:
+    get:
+      tags:
+      - Retrieve Language
+      summary: Retrieve language information using language code
+      description: Fetches language Information for the given language Code from the system
+      operationId: getLanguageBYLandcd
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: true
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: langCd
+        description: Language code for a particular Language need to be provided *(Only alphabets of limit 1 to 3 characters.)*
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-zA-Z]{1,3}$
+      responses:
+        200:
+          description: Gets language related information with respect to the given language code successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /scripts:
+    get:
+      tags:
+      - Retrieve Script
+      summary: Retrieve all script information
+      description: Fetches all script related Information from the system
+      operationId: getReferenceScripts
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      responses:
+        200:
+          description: 'Gets all script information successfully '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScriptResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /scripts/{scrptCd}:
+    get:
+      tags:
+      - Retrieve Script
+      summary: Retrieves script information using script Code
+      description: Fetches particular script related Information based on script Code from the system
+      operationId: getReferenceScriptsOnCd
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: scrptCd
+        description: Script code for a particular Language needs to be provided *(Only alphabets and numbers of limit 1 to 18 characters.)*
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-zA-Z0-9]{1,18}$
+      responses:
+        200:
+          description: 'Gets script information based on script code successfully '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScriptResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /dependentCountryRelationshipTypes:
+    get:
+      tags:
+      - Retrieve Dependent Country Relationship Type
+      summary: Retrieves all dependent Country Relationship Types information
+      description: Fetches all dependent Country Relationship Types related Information from the system
+      operationId: getDependentCountryRelationshipTypes
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      responses:
+        200:
+          description: Gets all dependent Country Relationship Type information successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DependentCountryRelationshipTypesResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /geopoliticalOrganizationStandards:
+    get:
+      tags:
+      - Retrieve Geopolitical Organization Standard
+      summary: Retrieves all Geopolitical Organization Standard Type Information
+      description: Fetches all Geopolitical Organization Standard Type related Information from the system
+      operationId: getOrganizationStandards
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      responses:
+        200:
+          description: 'Gets all Geopolitical Organization Standard Type information
+            successfully '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeopoliticalOrganizationStandardResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /geopoliticalOrganizationStandards/{orgStandardCode}:
+    get:
+      tags:
+      - Retrieve Geopolitical Organization Standard
+      summary: Retrieves all Geopolitical Organization Standard Type Information using Organization Standard Type Code
+      description: Fetches all Geopolitical Organization Standard Type related Information based on Organization Standard Type Code from the system
+      operationId: getOrganizationStandardsOnCode
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: orgStandardCode
+        description: Organization Standard Type Code for a particular Geopolitical Organization Standard Type needs to be provided *(Only alphabets of limit 1 to 10 characters.)*
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-zA-Z]{1,10}$
+      responses:
+        200:
+          description: 'Gets the particular Geopolitical Organization Standard Type
+            information using Organization Standard Type Code successfully '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeopoliticalOrganizationStandardResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /countries/{geopoliticalId}:
+    get:
+      tags:
+      - Retrieve Country
+      summary: Retrieves Country Information using Geopolitical Id
+      description: Fetches all Country related Information based on Geopolitical Id from the system
+      operationId: getCountriesByGeopoliticalId
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: geopoliticalId
+        description: Geopolitical Id for a particular Country needs to be provided
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-zA-Z-]{1,50}$
+      responses:
+        200:
+          description: Country information fetched using Geopolitical Id successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /countries:
+    get:
+      tags:
+      - Retrieve Country
+      summary: Retrieves country related information for all countries
+      description: Fetches country related information for all countries in DB.
+      operationId: getAllCountries
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: geopoliticalId
+        description: Geopolitical Id for a particular country needs to be provided
+        required: false
+        schema:
+          type: string
+          pattern: ^[0-9a-zA-Z-]{1,50}$
+      - in: query
+        name: targetDate
+        description: Target date for a particular country needs to be provided *(Only date format yyyy-mm-dd.)*
+        required: false
+        schema:
+          type: string
+          pattern: '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+      - in: query
+        name: endDate
+        description: End date for a particular country needs to be provided *(Only date format yyyy-mm-dd.)*
+        required: false
+        schema:
+          type: string
+          pattern: '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+      - in: query
+        name: countryCd
+        description: Country code for a particular country needs to be provided *(Only alphabets of limit 1 to 2 characters.)*
+        required: false
+        schema:
+          type: string
+          pattern: ^[a-zA-Z]{1,2}$
+      - in: query
+        name: countryShortName
+        description: Country ShortName for a particular country needs to be provided
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: orgStandardCode
+        description: Organisation Standard Code for a particular country needs to be provided *(Only alphabets of limit 1 to 10 characters.)*
+        required: false
+        schema:
+          type: string
+          pattern: ^[a-zA-Z]{1,10}$
+      responses:
+        200:
+          description: Country related information using Geopolitical Id, target date and end date fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /addressLabels:
+    get:
+      tags:
+      - Retrieve Address Label
+      summary: Fetches all Address Label related Information
+      description: Fetches all Address Label related Information from the system.
+      operationId: getAddress
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: query
+        name: targetDate
+        description: Target date for a particular State/Province Standard needs to be provided *(Only date format yyyy-mm-dd.)*
+        required: false
+        schema:
+          type: string
+          pattern: '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+      - in: query
+        name: endDate
+        description: End date for a particular  State/Province Standard needs to be provided *(Only date format yyyy-mm-dd.)*
+        required: false
+        schema:
+          type: string
+          pattern: '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      responses:
+        200:
+          description: 'Gets all Address Label information successfully '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressLabelsResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /addressLabels/{geopoliticalId}:
+    get:
+      tags:
+      - Retrieve Address Label
+      summary: Fetches all Address Label related Information based on geopoliticalId.
+      description: Fetches all Address Label related Information based on geopoliticalId.
+      operationId: getAddressByGeopoliticalId
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: query
+        name: targetDate
+        description: Target date for a particular State/Province Standard needs to be provided *(Only date format yyyy-mm-dd.)*
+        required: false
+        schema:
+          type: string
+          pattern: '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+      - in: query
+        name: endDate
+        description: End date for a particular  State/Province Standard needs to be provided *(Only date format yyyy-mm-dd.)*
+        required: false
+        schema:
+          type: string
+          pattern: '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: geopoliticalId
+        description: geopoliticalId for the Address Label
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-zA-Z-]{1,50}$
+      responses:
+        200:
+          description: 'Gets Address Label information based on country code successfully '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressLabelsResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /addressLabels/{geopoliticalId}/{localeCode}:
+    get:
+      tags:
+      - Retrieve Address Label
+      summary: Retrieves all Address Label related Information using geopoliticalId and locale code
+      description: Retrieves all Address Label related Information using geopoliticalId and locale code
+      operationId: getAddressByGeopoliticalIdAndLocale
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: query
+        name: targetDate
+        description: Target date for a particular State/Province Standard needs to be provided *(Only date format yyyy-mm-dd.)*
+        required: false
+        schema:
+          type: string
+          pattern: '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+      - in: query
+        name: endDate
+        description: End date for a particular  State/Province Standard needs to be provided *(Only date format yyyy-mm-dd.)*
+        required: false
+        schema:
+          type: string
+          pattern: '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: geopoliticalId
+        description: geopoliticalId for the Address Label
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-zA-Z-]{1,50}$
+      - in: path
+        name: localeCode
+        description: locale code for the address label *(Only alphabets, underscore and hyphen of limit 1 to 18 characters.)*
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-zA-Z-_]{1,18}$
+      responses:
+        200:
+          description: 'Gets Address Label information based on country code and language
+            code successfully '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressLabelsResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+  /addressLabels/{geopoliticalId}/{localeCode}/{addressLineNumber}:
+    get:
+      tags:
+      - Retrieve Address Label
+      summary: Retrieves all Address Label related Information using geopoliticalId, locale code and addressLineNumber
+      description: Retrieves all Address Label related Information using geopoliticalId and locale code and addressLineNumber
+      operationId: getAddressByGeopoliticalIdAndLocaleAndLineNumber
+      parameters:
+      - in: header
+        example: application/json
+        name: Content-Type
+        description: Describe the media type of the request
+        schema:
+          type: string
+        required: false
+      - in: header
+        example: application/json
+        name: Accept
+        description: Describe the media type of the response
+        schema:
+          type: string
+        required: false
+      - in: query
+        name: targetDate
+        description: Target date for a particular State/Province Standard needs to be provided *(Only date format yyyy-mm-dd.)*
+        required: false
+        schema:
+          type: string
+          pattern: '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+      - in: query
+        name: endDate
+        description: End date for a particular  State/Province Standard needs to be provided *(Only date format yyyy-mm-dd.)*
+        required: false
+        schema:
+          type: string
+          pattern: '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+      - in: header
+        name: X-CSR-SECURITY_TOKEN
+        description: 'The secure token authentication: To test, kindly go to the url:
+          https://geopolitical-efs-client.app.edcdev1.paas.fedex.com/token Then copy
+          the token and insert here'
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: geopoliticalId
+        description: geopoliticalId for the Address Label
+        required: true
+        schema:
+          type: string
+          pattern: ^[0-9a-zA-Z-]{1,50}$
+      - in: path
+        name: localeCode
+        description: locale code for the address label *(Only alphabets, underscore and hyphen of limit 1 to 18 characters.)*
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-zA-Z-_]{1,18}$
+      - in: path
+        name: addressLineNumber
+        description: address line number for the address label
+        required: true
+        schema:
+          type: integer
+          example: 1
+      responses:
+        200:
+          description: 'Gets Address Label information based on country code and language
+            code successfully '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressLabelsResponseAll'
+        400:
+          description: The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications
+        403:
+          description: The server understood the request, but is refusing to fulfill it.
+        404:
+          description: 'The server has not found anything matching the Request-URI.
+            No indication is given of whether the condition is temporary or permanent. '
+        410:
+          description: The requested resource is no longer available at the server and no forwarding address is known.
+        500:
+          description: Internal Server Error
+        502:
+          description: Bad Gateway
+        503:
+          description: The server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+components:
+  schemas:
+    MetaResponse:
+      type: object
+      properties:
+        version:
+          type: string
+          example: 1.0.0
+        transactionId:
+          type: string
+          example: a574e4c1-6278-4b10-b49f-4b70a26b021b
+        timeStamp:
+          type: string
+          example: '2020-04-28 13:51:07'
+        statusCode:
+          type: string
+          example: 200
+        message:
+          $ref: '#/components/schemas/Message'
+    Message:
+      type: object
+      properties:
+        data:
+          type: string
+          example: Message
+        internalMessage:
+          type: string
+          example: Records Fetched Successfully
+        status:
+          type: string
+          enum:
+          - Success
+          - error
+    MonthsOfYear:
+      type: object
+      properties:
+        monthOfYearNumber:
+          type: number
+          minLength: 1
+          maxLength: 38
+          example: '1'
+          pattern: ^[0-9]{1,38}$
+        monthOfYearShortName:
+          type: string
+          minLength: 1
+          maxLength: 18
+          example: Jan
+          pattern: ^[a-zA-Z]{1,18}$
+    MonthsOfYearResponseAll:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/MetaResponse'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonthsOfYear'
+    DaysOfWeek:
+      type: object
+      properties:
+        dayOfWeekNumber:
+          type: number
+          minLength: 1
+          maxLength: 38
+          example: '1'
+          pattern: ^[0-9]{1,38}$
+        dayOfWeekFullName:
+          type: string
+          minLength: 1
+          maxLength: 9
+          example: Monday
+          pattern: ^[a-zA-Z]{1,9}$
+        dayOfWeekShortName:
+          type: string
+          minLength: 1
+          maxLength: 256
+          example: Mon
+          pattern: ^[a-zA-Z]{1,256}$
+    DaysOfWeekResponseAll:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/MetaResponse'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DaysOfWeek'
+    Language:
+      type: object
+      properties:
+        languageCode:
+          type: string
+          minLength: 1
+          maxLength: 3
+          example: de
+          pattern: ^[a-zA-Z]{1,3}$
+        languageName:
+          type: string
+          minLength: 1
+          maxLength: 256
+          example: German
+          pattern: ^[a-zA-Z]{1,256}$
+        nativeScriptLanguageName:
+          type: string
+          minLength: 1
+          maxLength: 256
+          example: Kurrent
+          pattern: ^[a-zA-Z]{1,256}$
+        nativeScriptCode:
+          type: string
+          minLength: 1
+          maxLength: 18
+          example: Arab
+          pattern: ^[a-zA-Z]{18}$
+        locales:
+          type: array
+          items:
+            $ref: '#/components/schemas/Locale'
+    Locale:
+      type: object
+      properties:
+        localeCode:
+          type: string
+          minLength: 1
+          maxLength: 18
+          example: en-US
+        countryCode:
+          type: string
+          minLength: 1
+          maxLength: 2
+          example: NN
+        scriptCode:
+          type: string
+          minLength: 1
+          maxLength: 18
+          example: kt
+          pattern: ^[a-zA-Z]{1,18}$
+        cldrVersionDate:
+          type: string
+          format: yyyy-mm-dd
+          example: 2019-06-30T00:00:00Z
+        cldrVersionNumber:
+          type: string
+          minLength: 1
+          maxLength: 18
+          example: 12345678901
+        dateFullFormatDescription:
+          type: string
+          format: EEEE dd MMMM y
+          example: Thursday, 01 January 2019
+        dateLongFormatDescription:
+          type: string
+          format: dd MMMM y
+          example: 01 January 2019
+        dateMediumFormatDescription:
+          type: string
+          format: dd MMM y
+          example: 01 Jan 2019
+        dateShortFormatDescription:
+          type: string
+          format: y-MM-dd
+          example: '2019-01-01'
+        effectiveDate:
+          type: string
+          example: 2020-01-01T00:00:00.000+0000
+        expirationDate:
+          type: string
+          example: 2020-12-31T00:00:00.000+0000
+        translatedDOWs:
+          type: array
+          items:
+            $ref: '#/components/schemas/translatedDayOfWeeks'
+        translatedMOYs:
+          type: array
+          items:
+            $ref: '#/components/schemas/translatedMonthOfYears'
+    translatedDayOfWeeks:
+      type: object
+      properties:
+        dayOfWeekNumber:
+          type: number
+          minLength: 1
+          maxLength: 38
+          example: '1'
+          pattern: ^[1-9]{1,38}$
+        translatedDayOfWeekName:
+          type: string
+          minLength: 1
+          maxLength: 256
+          example: Montag
+          pattern: ^[a-zA-Z]{1,256}$
+    translatedMonthOfYears:
+      type: object
+      properties:
+        monthOfYearNumber:
+          type: number
+          minLength: 1
+          maxLength: 38
+          example: '1'
+          pattern: ^[1-9]{1,38}$
+        translatedMonthOfYearName:
+          type: string
+          minLength: 1
+          maxLength: 65
+          example: Januar
+          pattern: ^[a-zA-Z]{1,65}$
+    LanguageResponseAll:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/MetaResponse'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Language'
+    Script:
+      type: object
+      properties:
+        scriptCode:
+          type: string
+          minLength: 1
+          maxLength: 18
+          example: kt
+          pattern: ^[a-zA-Z]{1,18}$
+        scriptName:
+          type: string
+          minLength: 1
+          maxLength: 256
+          example: Kurrent
+          pattern: ^[a-zA-Z]{1,256}$
+        scriptDescription:
+          type: string
+          minLength: 1
+          maxLength: 4000
+          example: Kurrent is the cursive version of Fraktur
+          pattern: ^[a-zA-Z]{1,4000}$
+    ScriptResponseAll:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/MetaResponse'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Script'
+    DependentCountryRelationshipTypes:
+      type: object
+      properties:
+        dependentRelationshipTypeId:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: '6950446786971271000'
+        dependentRelationshipTypeDescription:
+          type: string
+          minLength: 1
+          maxLength: 65
+          example: Province
+    DependentCountryRelationshipTypesResponseAll:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/MetaResponse'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependentCountryRelationshipTypes'
+    GeopoliticalOrganizationStandard:
+      type: object
+      properties:
+        organizationStandardCode:
+          type: string
+          minLength: 1
+          maxLength: 10
+          example: ISO
+        organizationStandardName:
+          type: string
+          minLength: 1
+          maxLength: 65
+          example: International organization for standardization
+    GeopoliticalOrganizationStandardResponseAll:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/MetaResponse'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeopoliticalOrganizationStandard'
+    AddressLabels:
+      type: object
+      properties:
+        geopoliticalId:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: '1891508155781005800'
+        brandAddressLineDescription:
+          type: string
+          minLength: 1
+          maxLength: 35
+          example: Address Line 1
+        addressLineNumber:
+          type: string
+          minLength: 1
+          example: 1
+        applicable:
+          type: boolean
+          example: true
+    AddressLabelsResponseAll:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/MetaResponse'
+        data:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AddressLabels'
+          example:
+            en-US:
+            - geopoliticalId: '12221212121212121212'
+              brandAddressLineDescription: St. Name
+              addressLineNumber: 1
+              applicable: true
+    CountryDetails:
+      type: object
+      properties:
+        geopoliticalId:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: '1891508155781005800'
+        countryNumericCode:
+          type: number
+          minLength: 1
+          maxLength: 38
+          example: 1234556653
+        countryCode:
+          type: string
+          minLength: 1
+          maxLength: 2
+          example: NN
+        threeCharacterCountryCode:
+          type: string
+          minLength: 1
+          maxLength: 3
+          example: USA
+        independentFlag:
+          type: string
+          minLength: 1
+          maxLength: 1
+          example: Y
+        dependentRelationshipId:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: '8277238861217049000'
+        dependentCountryCode:
+          type: number
+          minLength: 1
+          maxLength: 38
+          example: 1720271355005411300
+        postalFormatDescription:
+          type: string
+          minLength: 1
+          maxLength: 25
+          example: xxxx-xxxx
+        postalFlag:
+          type: string
+          minLength: 1
+          maxLength: 1
+          example: Y
+        postalLength:
+          type: number
+          minLength: 1
+          maxLength: 38
+          example: 9
+        firstWorkWeekDayName:
+          type: string
+          minLength: 1
+          maxLength: 25
+          example: Monday
+        lastWorkWeekDayName:
+          type: string
+          minLength: 1
+          maxLength: 25
+          example: Friday
+        weekendFirstDayName:
+          type: string
+          minLength: 1
+          maxLength: 25
+          example: Saturday
+        internetDomainName:
+          type: string
+          minLength: 1
+          maxLength: 5
+          example: .us
+        internationalDialingCode:
+          type: string
+          minLength: 1
+          maxLength: 3
+          example: '+1'
+        landPhoneMaximumLength:
+          type: number
+          minLength: 1
+          maxLength: 38
+          example: 8
+        landPhoneMinimumLength:
+          type: number
+          minLength: 1
+          maxLength: 38
+          example: 8
+        mobilePhoneMaximumLength:
+          type: number
+          minLength: 1
+          maxLength: 38
+          example: 12
+        mobilePhoneMinimumLength:
+          type: number
+          minimum: 1
+          maxLength: 38
+          example: 8
+        phoneNumberFormatPattern:
+          type: string
+          minimum: 1
+          maxLength: 38
+          example: ^\([0-9]{3}\)\ ?[0-9]{3}\-[0-9]{4}$
+        effectiveDate:
+          type: string
+          example: '2020-01-01'
+        expirationDate:
+          type: string
+          example: '2020-12-31'
+        currencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Country-Currencies'
+        countryOrganizationStandards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Country-CountryOrgStd'
+        addressLabels:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CountryAddressLabel'
+          example:
+            en-US:
+            - brandAddressLineDescription: St. Name
+              addressLineNumber: 1
+              applicable: true
+    Country-Currencies:
+      type: object
+      properties:
+        currencyNumericCode:
+          type: string
+          minLength: 1
+          maxLength: 38
+          example: 840
+        currencyCode:
+          type: string
+          minLength: 1
+          maxLength: 3
+          example: USD
+        minorUnitCode:
+          type: string
+          minLength: 1
+          maxLength: 38
+          example: 2
+        moneyFormatDescription:
+          type: string
+          minLength: 1
+          maxLength: 18
+          example: null
+        effectiveDate:
+          type: string
+          example: '2020-01-01'
+        expirationDate:
+          type: string
+          example: '2020-12-31'
+    Country-CountryOrgStd:
+      type: object
+      properties:
+        organizationStandardCode:
+          type: string
+          minLength: 1
+          maxLength: 10
+          example: ISO
+        organizationStandardName:
+          type: string
+          minLength: 1
+          maxLength: 65
+          example: International organization for standardization
+        countryFullName:
+          type: string
+          minLength: 1
+          maxLength: 65
+          example: United States of America
+        countryShortName:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: USA
+        effectiveDate:
+          type: string
+          example: '2020-01-01'
+        expirationDate:
+          type: string
+          example: '2020-12-31'
+    CountryAddressLabel:
+      type: object
+      properties:
+        brandAddressLineDescription:
+          type: string
+          minLength: 1
+          maxLength: 35
+          example: St. Name
+        addressLineNumber:
+          type: integer
+          minLength: 1
+          example: 1
+        applicable:
+          type: boolean
+          example: true
+    CountryResponseAll:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/MetaResponse'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CountryDetails'

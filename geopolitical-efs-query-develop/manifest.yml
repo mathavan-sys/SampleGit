@@ -1,0 +1,8 @@
+---
+applications:
+- name: geopolitical-efs-query
+  memory: 1024M
+  buildpack: java_current
+  health-check-type: process
+  env: 
+    JAVA_OPTS: "-Dappdynamics.http.proxyHost=internet.proxy.fedex.com -Dappdynamics.http.proxyPort=3128 -Duser.timezone=GMT "
